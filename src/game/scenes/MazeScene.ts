@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { story } from '../../content/story';
 import { stageContent } from '../../content/stages';
 import { MAZE_COLLECTIBLES, MAZE_GRID } from '../../content/maze';
 import { MazeEnemy } from '../objects/MazeEnemy';
@@ -84,20 +83,6 @@ export class MazeScene extends Phaser.Scene {
       0xfff7f9,
     );
 
-    this.add
-      .text(
-        GAME_WIDTH / 2,
-        210,
-        `${story.mazePrelude}\n\nCollect ${stageContent.maze.targetCollectibles} charms before the exit opens.\nTimer: ${stageContent.maze.timerSeconds}s`,
-        {
-          align: 'center',
-          color: '#4b2436',
-          fontSize: '20px',
-          wordWrap: { width: 700 },
-        },
-      )
-      .setOrigin(0.5);
-
     this.collectedText = this.add.text(
       64,
       GAME_HEIGHT - 54,
@@ -140,10 +125,10 @@ export class MazeScene extends Phaser.Scene {
       this.cursors ?? this.input.keyboard!.createCursorKeys(),
       stageContent.maze.playerSpeed,
     );
-    this.player.setCircle(16);
-    this.player.setOffset(4, 4);
+    this.player.setCircle(14);
+    this.player.setOffset(3, 3);
 
-    const enemyPos = cellToWorld(18, 7);
+    const enemyPos = cellToWorld(9, 4);
     this.enemy = new MazeEnemy(
       this,
       enemyPos.x,
@@ -151,8 +136,8 @@ export class MazeScene extends Phaser.Scene {
       ENEMY_TEXTURE_KEY,
       stageContent.maze.enemySpeed,
     );
-    this.enemy.setCircle(16);
-    this.enemy.setOffset(4, 4);
+    this.enemy.setCircle(14);
+    this.enemy.setOffset(3, 3);
 
     this.physics.add.collider(this.player, this.walls);
     this.physics.add.collider(this.enemy, this.walls);
@@ -168,11 +153,18 @@ export class MazeScene extends Phaser.Scene {
     });
     this.timer.mount(GAME_WIDTH - 170, 28);
 
-    const pathTimer = this.time.addEvent({
-      delay: 500,
-      loop: true,
-      callback: () => {
-        if (!this.player || !this.enemy || this.isEnding) return;
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.timer?.destroy();
+    });
+  }
+
+  update(): void {
+    if (this.isComplete || this.isEnding) {
+      this.enemy?.setVelocity(0, 0);
+      this.player?.setVelocity(0, 0);
+    } else {
+      this.player?.update();
+      if (this.player && this.enemy) {
         const from = worldToCell(this.enemy.x, this.enemy.y);
         const to = worldToCell(this.player.x, this.player.y);
         const step = findNextStep(MAZE_GRID, from.col, from.row, to.col, to.row);
@@ -180,23 +172,8 @@ export class MazeScene extends Phaser.Scene {
           const target = cellToWorld(step.col, step.row);
           this.enemy.setPathTarget(target.x, target.y);
         }
-      },
-    });
-
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      this.timer?.destroy();
-      pathTimer.remove();
-    });
-  }
-
-  update(): void {
-    this.player?.update();
-
-    if (!this.isEnding) {
+      }
       this.enemy?.update();
-    } else {
-      this.enemy?.setVelocity(0, 0);
-      this.player?.setVelocity(0, 0);
     }
 
     if (
@@ -210,8 +187,8 @@ export class MazeScene extends Phaser.Scene {
   }
 
   private createTextures(): void {
-    this.createCircleTexture(PLAYER_TEXTURE_KEY, 20, 0xf26ca7);
-    this.createCircleTexture(ENEMY_TEXTURE_KEY, 20, 0x6f1d42);
+    this.createCircleTexture(PLAYER_TEXTURE_KEY, 17, 0xf26ca7);
+    this.createCircleTexture(ENEMY_TEXTURE_KEY, 17, 0x6f1d42);
 
     if (!this.textures.exists(HEART_TEXTURE_KEY)) {
       const graphics = this.make.graphics({ x: 0, y: 0 }, false);
@@ -226,9 +203,9 @@ export class MazeScene extends Phaser.Scene {
     if (!this.textures.exists(WALL_TEXTURE_KEY)) {
       const graphics = this.make.graphics({ x: 0, y: 0 }, false);
       graphics.fillStyle(0xf4b6c2, 1);
-      graphics.fillRoundedRect(0, 0, 24, 24, 6);
+      graphics.fillRect(0, 0, 24, 24);
       graphics.lineStyle(2, 0xe28aa5, 1);
-      graphics.strokeRoundedRect(1, 1, 22, 22, 6);
+      graphics.strokeRect(1, 1, 22, 22);
       graphics.generateTexture(WALL_TEXTURE_KEY, 24, 24);
       graphics.destroy();
     }

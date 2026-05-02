@@ -19,6 +19,9 @@ export class MazeEnemy extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this);
 
     this.setCollideWorldBounds(true);
+
+    const body = this.body as Phaser.Physics.Arcade.Body | null;
+    body?.setAllowGravity(false);
   }
 
   setPathTarget(x: number, y: number): void {

@@ -1,0 +1,20 @@
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(circle at top, #ffe8ef 0%, #fff4f6 42%, #f6dfe9 100%);
+  color: #4b2436;
+  font-family: Georgia, "Times New Roman", serif;
+  overflow: hidden;
+}
+
+canvas {
+  display: block;
+}
