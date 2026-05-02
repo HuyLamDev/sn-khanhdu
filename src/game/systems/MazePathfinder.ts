@@ -8,7 +8,9 @@ export function findNextStep(
   if (fromCol === toCol && fromRow === toRow) return null;
 
   const rows = grid.length;
+  if (rows === 0) return null;
   const cols = grid[0].length;
+  if (cols === 0) return null;
 
   const visited: boolean[][] = Array.from({ length: rows }, () =>
     new Array<boolean>(cols).fill(false),

@@ -26,10 +26,10 @@ export class MazeEnemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   update(): void {
-    const body = this.body as Phaser.Physics.Arcade.Body;
+    const body = this.body as Phaser.Physics.Arcade.Body | null;
 
-    if (!this.active || this.pathTarget === null) {
-      body.setVelocity(0, 0);
+    if (!body || !this.active || this.pathTarget === null) {
+      body?.setVelocity(0, 0);
       return;
     }
 
