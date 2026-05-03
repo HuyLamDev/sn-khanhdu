@@ -322,8 +322,7 @@ export class RunnerScene extends Phaser.Scene {
     this.obstacles?.children.each((child) => {
       const obstacle = child as RunnerObstacle;
       obstacle.setVelocity(0, 0);
-
-      return false;
+      return true;
     });
 
     this.statusText?.setText('The tower gate opens. Press Space, Up, or Enter to continue.');
@@ -354,7 +353,7 @@ export class RunnerScene extends Phaser.Scene {
   }
 
   private failRun(): void {
-    if (this.ended) {
+    if (this.ended || this.stageComplete) {
       return;
     }
 
@@ -371,7 +370,6 @@ export class RunnerScene extends Phaser.Scene {
     this.spawnEvent = undefined;
 
     this.continueButton?.removeAllListeners();
-    this.physics.world.gravity.y = 0;
   }
 
   private formatDistance(): string {
