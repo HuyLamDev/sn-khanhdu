@@ -1,18 +1,18 @@
-import Phaser from 'phaser';
-import { stageContent } from '../../content/stages';
-import { MAZE_COLLECTIBLES, MAZE_GRID } from '../../content/maze';
-import { MazeEnemy } from '../objects/MazeEnemy';
-import { Player } from '../objects/Player';
-import { GAME_HEIGHT, GAME_WIDTH } from '../config/stageConfig';
-import { gameSession } from '../systems/GameSession';
-import { SceneFlow, SCENES } from '../systems/SceneFlow';
-import { TimerSystem } from '../systems/TimerSystem';
-import { findNextStep } from '../systems/MazePathfinder';
+import Phaser from "phaser";
+import { stageContent } from "../../content/stages";
+import { MAZE_COLLECTIBLES, MAZE_GRID } from "../../content/maze";
+import { MazeEnemy } from "../objects/MazeEnemy";
+import { Player } from "../objects/Player";
+import { GAME_HEIGHT, GAME_WIDTH } from "../config/stageConfig";
+import { gameSession } from "../systems/GameSession";
+import { SceneFlow, SCENES } from "../systems/SceneFlow";
+import { TimerSystem } from "../systems/TimerSystem";
+import { findNextStep } from "../systems/MazePathfinder";
 
-const PLAYER_TEXTURE_KEY = 'maze-princess';
-const ENEMY_TEXTURE_KEY = 'maze-enemy';
-const HEART_TEXTURE_KEY = 'maze-heart';
-const WALL_TEXTURE_KEY = 'maze-wall';
+const PLAYER_TEXTURE_KEY = "maze-princess";
+const ENEMY_TEXTURE_KEY = "maze-enemy";
+const HEART_TEXTURE_KEY = "maze-heart";
+const WALL_TEXTURE_KEY = "maze-wall";
 
 const ARENA = {
   x: 80,
@@ -56,7 +56,7 @@ export class MazeScene extends Phaser.Scene {
   }
 
   create(): void {
-    gameSession.setStage('maze');
+    gameSession.setStage("maze");
     gameSession.setMazeCollected(0);
     this.isComplete = false;
     this.isEnding = false;
@@ -88,9 +88,9 @@ export class MazeScene extends Phaser.Scene {
       GAME_HEIGHT - 54,
       this.getCollectedLabel(0),
       {
-        color: '#7a284b',
-        fontSize: '24px',
-        fontStyle: 'bold',
+        color: "#7a284b",
+        fontSize: "24px",
+        fontStyle: "bold",
       },
     );
 
@@ -98,11 +98,11 @@ export class MazeScene extends Phaser.Scene {
       .text(
         GAME_WIDTH - 64,
         GAME_HEIGHT - 54,
-        'Find all hearts and avoid the shadow.',
+        "Find all hearts and avoid the shadow.",
         {
-          align: 'right',
-          color: '#4b2436',
-          fontSize: '18px',
+          align: "right",
+          color: "#4b2436",
+          fontSize: "18px",
         },
       )
       .setOrigin(1, 0);
@@ -125,7 +125,11 @@ export class MazeScene extends Phaser.Scene {
       this.cursors ?? this.input.keyboard!.createCursorKeys(),
       stageContent.maze.playerSpeed,
     );
-    this.player.setDisplaySize(CELL - 6, CELL - 6);
+    this.player.setDisplaySize(CELL - 5, CELL - 1);
+    const playerBody = this.player.body as Phaser.Physics.Arcade.Body;
+    const { realWidth, realHeight } = this.player.frame;
+    playerBody.setSize(realWidth * 0.65, realHeight * 0.60, true);
+    playerBody.offset.y += 3;
 
     const enemyPos = cellToWorld(9, 4);
     this.enemy = new MazeEnemy(
@@ -165,7 +169,13 @@ export class MazeScene extends Phaser.Scene {
       if (this.player && this.enemy) {
         const from = worldToCell(this.enemy.x, this.enemy.y);
         const to = worldToCell(this.player.x, this.player.y);
-        const step = findNextStep(MAZE_GRID, from.col, from.row, to.col, to.row);
+        const step = findNextStep(
+          MAZE_GRID,
+          from.col,
+          from.row,
+          to.col,
+          to.row,
+        );
         if (step) {
           const target = cellToWorld(step.col, step.row);
           this.enemy.setPathTarget(target.x, target.y);
@@ -199,14 +209,27 @@ export class MazeScene extends Phaser.Scene {
   private createWalls(): void {
     if (!this.walls) return;
 
+    const borderGraphics = this.add.graphics();
+    borderGraphics.lineStyle(1.5, 0xc47a9a, 0.7);
+
     MAZE_GRID.forEach((rowData, row) => {
       rowData.forEach((cell, col) => {
         if (cell !== 1) return;
         const pos = cellToWorld(col, row);
-        const wall = this.walls!.create(pos.x, pos.y, WALL_TEXTURE_KEY) as Phaser.Physics.Arcade.Image;
+        const wall = this.walls!.create(
+          pos.x,
+          pos.y,
+          WALL_TEXTURE_KEY,
+        ) as Phaser.Physics.Arcade.Image;
         wall.setDisplaySize(CELL, CELL);
         (wall.body as Phaser.Physics.Arcade.StaticBody).setSize(CELL, CELL);
         wall.refreshBody();
+        borderGraphics.strokeRect(
+          pos.x - CELL / 2,
+          pos.y - CELL / 2,
+          CELL,
+          CELL,
+        );
       });
     });
   }
@@ -250,19 +273,21 @@ export class MazeScene extends Phaser.Scene {
     }
 
     this.isComplete = true;
-    this.objectiveText?.setText('All hearts found. Press SPACE or click continue.');
+    this.objectiveText?.setText(
+      "All hearts found. Press SPACE or click continue.",
+    );
 
     this.continuePrompt = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT - 96, 'Continue To The Final Run', {
-        backgroundColor: '#f4b6c2',
-        color: '#4b1f31',
-        fontSize: '24px',
+      .text(GAME_WIDTH / 2, GAME_HEIGHT - 96, "Continue To The Final Run", {
+        backgroundColor: "#f4b6c2",
+        color: "#4b1f31",
+        fontSize: "24px",
         padding: { x: 18, y: 10 },
       })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
 
-    this.continuePrompt.on('pointerup', () => {
+    this.continuePrompt.on("pointerup", () => {
       this.goToRunner();
     });
   }
@@ -274,7 +299,7 @@ export class MazeScene extends Phaser.Scene {
 
     this.isEnding = true;
     this.timer?.stop();
-    SceneFlow.goTo(this, 'runner');
+    SceneFlow.goTo(this, "runner");
   }
 
   private loseStage(): void {
