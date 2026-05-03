@@ -4,13 +4,13 @@ import { RunnerObstacle } from "../objects/RunnerObstacle";
 import { GAME_HEIGHT, GAME_WIDTH } from "../config/stageConfig";
 import { gameSession } from "../systems/GameSession";
 import { SceneFlow, SCENES } from "../systems/SceneFlow";
-import { TimerSystem } from "../systems/TimerSystem";
 import { registerRunnerObstacleCollision } from "./registerRunnerObstacleCollision";
 
 const PLAYER_TEXTURE_KEY = "runner-player";
 const OBSTACLE_TEXTURE_KEY = "runner-obstacle";
 const GROUND_TEXTURE_KEY = "runner-ground";
 const BACKDROP_TEXTURE_KEY = "runner-backdrop";
+const ROAD_DASH_TEXTURE_KEY = "runner-road-dash";
 
 const PLAYER_X = 180;
 const GROUND_HEIGHT = 90;
@@ -20,23 +20,20 @@ const PLAYER_HEIGHT = 128;
 const OBSTACLE_WIDTH = 68;
 const OBSTACLE_HEIGHT = 124;
 const WORLD_GRAVITY = 980;
-const DISTANCE_SCALE = 0.44;
 const MIN_SPAWN_DELAY_MS = 1500;
 const MAX_SPAWN_DELAY_MS = 2100;
 
 export class RunnerScene extends Phaser.Scene {
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
   private jumpKey?: Phaser.Input.Keyboard.Key;
-  private continueKey?: Phaser.Input.Keyboard.Key;
   private player?: Phaser.Physics.Arcade.Sprite;
   private ground?: Phaser.Physics.Arcade.Image;
   private obstacles?: Phaser.Physics.Arcade.Group;
-  private timer?: TimerSystem;
+  private roadDash?: Phaser.GameObjects.TileSprite;
   private spawnEvent?: Phaser.Time.TimerEvent;
-  private distanceText?: Phaser.GameObjects.Text;
-  private statusText?: Phaser.GameObjects.Text;
-  private continueButton?: Phaser.GameObjects.Text;
-  private runnerDistance = 0;
+  private obstacleHudText?: Phaser.GameObjects.Text;
+  private obstaclesDodged = 0;
+  private obstaclesSpawned = 0;
   private currentSpeed = 0;
   private stageComplete = false;
   private ended = false;
@@ -47,8 +44,8 @@ export class RunnerScene extends Phaser.Scene {
 
   create(): void {
     gameSession.setStage("runner");
-    gameSession.setRunnerDistance(0);
-    this.runnerDistance = 0;
+    this.obstaclesDodged = 0;
+    this.obstaclesSpawned = 0;
     this.currentSpeed = stageContent.runner.scrollSpeed;
     this.stageComplete = false;
     this.ended = false;
@@ -62,7 +59,6 @@ export class RunnerScene extends Phaser.Scene {
     this.createObstacles();
     this.createHud();
     this.bindInput();
-    this.startTimer();
     this.scheduleNextSpawn();
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -77,14 +73,14 @@ export class RunnerScene extends Phaser.Scene {
 
     if (this.stageComplete) {
       this.player.setVelocityX(0);
-      this.handleContinueInput();
       return;
     }
 
     this.currentSpeed +=
       stageContent.runner.scrollAcceleration * (delta / 1000);
     this.player.setMaxVelocity(this.currentSpeed, 900);
-    this.updateDistance(delta);
+    this.roadDash &&
+      (this.roadDash.tilePositionX += this.currentSpeed * (delta / 1000));
     this.recycleObstacles();
 
     if (this.shouldJump()) {
@@ -116,24 +112,24 @@ export class RunnerScene extends Phaser.Scene {
       ground.generateTexture(GROUND_TEXTURE_KEY, GAME_WIDTH, GROUND_HEIGHT);
       ground.destroy();
     }
+
+    if (!this.textures.exists(ROAD_DASH_TEXTURE_KEY)) {
+      const dash = this.add.graphics();
+      dash.fillStyle(0xffedf3, 1);
+      dash.fillRect(0, 0, 70, 6);
+      dash.generateTexture(ROAD_DASH_TEXTURE_KEY, 120, 6);
+      dash.destroy();
+    }
   }
 
   private createBackdrop(): void {
     this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, BACKDROP_TEXTURE_KEY);
 
-    this.add.text(48, 34, "Final Trial", {
+    this.add.text(48, 34, "Final Round", {
       color: "#7a284b",
       fontSize: "32px",
       fontStyle: "bold",
     });
-
-    this.add
-      .text(GAME_WIDTH - 48, 42, `Goal: ${stageContent.runner.goalDistance}m`, {
-        color: "#7a284b",
-        fontSize: "24px",
-        fontStyle: "bold",
-      })
-      .setOrigin(1, 0);
   }
 
   private createTrack(): void {
@@ -144,11 +140,9 @@ export class RunnerScene extends Phaser.Scene {
     );
     this.ground.refreshBody();
 
-    for (let x = 0; x < GAME_WIDTH; x += 120) {
-      this.add
-        .rectangle(x + 40, GROUND_TOP + 18, 70, 6, 0xffedf3)
-        .setOrigin(0, 0.5);
-    }
+    this.roadDash = this.add
+      .tileSprite(0, GROUND_TOP + 18, GAME_WIDTH, 6, ROAD_DASH_TEXTURE_KEY)
+      .setOrigin(0, 0.5);
   }
 
   private createPlayer(): void {
@@ -185,18 +179,13 @@ export class RunnerScene extends Phaser.Scene {
   }
 
   private createHud(): void {
-    this.distanceText = this.add.text(48, 148, this.formatDistance(), {
-      color: "#7a284b",
-      fontSize: "24px",
-      fontStyle: "bold",
-    });
-
-    this.statusText = this.add
-      .text(GAME_WIDTH / 2, 160, "Jump with Up or Space", {
-        color: "#6b5460",
-        fontSize: "20px",
+    this.obstacleHudText = this.add
+      .text(GAME_WIDTH / 2, 34, this.formatObstacles(), {
+        color: "#7a284b",
+        fontSize: "28px",
+        fontStyle: "bold",
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5, 0);
   }
 
   private bindInput(): void {
@@ -204,16 +193,6 @@ export class RunnerScene extends Phaser.Scene {
     this.jumpKey = this.input.keyboard?.addKey(
       Phaser.Input.Keyboard.KeyCodes.SPACE,
     );
-    this.continueKey = this.input.keyboard?.addKey(
-      Phaser.Input.Keyboard.KeyCodes.ENTER,
-    );
-  }
-
-  private startTimer(): void {
-    this.timer = new TimerSystem(this, stageContent.runner.timerSeconds, () => {
-      this.failRun();
-    });
-    this.timer.mount(GAME_WIDTH - 170, 78);
   }
 
   private scheduleNextSpawn(): void {
@@ -236,6 +215,10 @@ export class RunnerScene extends Phaser.Scene {
       return;
     }
 
+    if (this.obstaclesSpawned >= stageContent.runner.goalObstacles) {
+      return;
+    }
+
     const obstacle = this.obstacles.get(
       GAME_WIDTH + OBSTACLE_WIDTH,
       GROUND_TOP - OBSTACLE_HEIGHT / 2,
@@ -253,6 +236,7 @@ export class RunnerScene extends Phaser.Scene {
       GROUND_TOP - OBSTACLE_HEIGHT / 2,
       -this.currentSpeed,
     );
+    this.obstaclesSpawned++;
   }
 
   private recycleObstacles(): void {
@@ -260,6 +244,12 @@ export class RunnerScene extends Phaser.Scene {
       const obstacle = child as RunnerObstacle;
       if (obstacle.active && obstacle.x < -OBSTACLE_WIDTH) {
         obstacle.park(-OBSTACLE_WIDTH, GROUND_TOP - OBSTACLE_HEIGHT / 2);
+        this.obstaclesDodged++;
+        this.obstacleHudText?.setText(this.formatObstacles());
+
+        if (this.obstaclesDodged >= stageContent.runner.goalObstacles) {
+          this.completeRun();
+        }
       }
     }
   }
@@ -275,37 +265,12 @@ export class RunnerScene extends Phaser.Scene {
     );
   }
 
-  private handleContinueInput(): void {
-    const upPressed = this.wasJustPressed(this.cursors?.up);
-    const spacePressed = this.wasJustPressed(this.jumpKey);
-    const enterPressed = this.wasJustPressed(this.continueKey);
-
-    if (upPressed || spacePressed || enterPressed) {
-      this.continueToWin();
-    }
-  }
-
-  private updateDistance(delta: number): void {
-    this.runnerDistance = Math.min(
-      stageContent.runner.goalDistance,
-      this.runnerDistance + this.currentSpeed * (delta / 1000) * DISTANCE_SCALE,
-    );
-
-    gameSession.setRunnerDistance(Math.round(this.runnerDistance));
-    this.distanceText?.setText(this.formatDistance());
-
-    if (this.runnerDistance >= stageContent.runner.goalDistance) {
-      this.completeRun();
-    }
-  }
-
   private completeRun(): void {
     if (this.stageComplete || this.ended) {
       return;
     }
 
     this.stageComplete = true;
-    this.timer?.stop();
     this.spawnEvent?.remove(false);
     this.spawnEvent = undefined;
 
@@ -315,33 +280,19 @@ export class RunnerScene extends Phaser.Scene {
       return true;
     });
 
-    this.statusText?.setText(
-      "The tower gate opens. Press Space, Up, or Enter to continue.",
-    );
-
-    this.continueButton = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2, "Continue To The Prince", {
-        backgroundColor: "#f4b6c2",
-        color: "#4b1f31",
-        fontSize: "28px",
-        padding: { x: 18, y: 12 },
-      })
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true });
-
-    this.continueButton.on("pointerup", () => {
-      this.continueToWin();
+    this.time.delayedCall(1200, () => {
+      this.continueToEnding();
     });
   }
 
-  private continueToWin(): void {
+  private continueToEnding(): void {
     if (this.ended) {
       return;
     }
 
     this.ended = true;
     this.cleanup();
-    SceneFlow.goTo(this, "win");
+    SceneFlow.goTo(this, "ending");
   }
 
   private failRun(): void {
@@ -355,17 +306,12 @@ export class RunnerScene extends Phaser.Scene {
   }
 
   private cleanup(): void {
-    this.timer?.destroy();
-    this.timer = undefined;
-
     this.spawnEvent?.remove(false);
     this.spawnEvent = undefined;
-
-    this.continueButton?.removeAllListeners();
   }
 
-  private formatDistance(): string {
-    return `Distance: ${Math.round(this.runnerDistance)} / ${stageContent.runner.goalDistance}m`;
+  private formatObstacles(): string {
+    return `Gemini: ${this.obstaclesDodged} / ${stageContent.runner.goalObstacles}`;
   }
 
   private wasJustPressed(key?: Phaser.Input.Keyboard.Key): boolean {

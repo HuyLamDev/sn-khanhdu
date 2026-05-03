@@ -20,8 +20,11 @@ export class BootScene extends Phaser.Scene {
     this.load.image('maze-princess', 'assets/maze-player-kdu.png');
     this.load.image('maze-enemy', 'assets/maze-enemy-hung-huynh.png');
     this.load.image('maze-wall', 'assets/maze-wall-tlmh.png');
+    this.load.image('maze-heart', 'assets/valentine-heart-icon-6.png');
     this.load.image('runner-player', 'assets/obstacle-player-kdu.png');
     this.load.image('runner-obstacle', 'assets/obstacle-hung-huynh.png');
+    this.load.image('ending-castle', 'assets/ending-castle.png');
+    this.load.image('win-bg', 'assets/win-scene-background.png');
 
     const cx = GAME_WIDTH / 2;
     const cy = GAME_HEIGHT / 2;

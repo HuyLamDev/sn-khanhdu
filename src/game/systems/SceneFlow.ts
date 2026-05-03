@@ -10,6 +10,7 @@ export const SCENES = {
   quiz: "QuizScene",
   maze: "MazeScene",
   runner: "RunnerScene",
+  ending: "EndingScene",
   win: "WinScene",
   lose: "LoseScene",
 } as const;
@@ -51,6 +52,7 @@ const STAGE_TO_SCENE: Record<StageKey, string> = {
   quiz: SCENES.quiz,
   maze: SCENES.maze,
   runner: SCENES.runner,
+  ending: SCENES.ending,
   win: SCENES.win,
   lose: SCENES.lose,
 };

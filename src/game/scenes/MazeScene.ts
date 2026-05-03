@@ -61,7 +61,6 @@ export class MazeScene extends Phaser.Scene {
     this.isComplete = false;
     this.isEnding = false;
 
-    this.createTextures();
     this.physics.world.setBounds(ARENA.x, ARENA.y, ARENA.width, ARENA.height);
     this.cursors = this.input.keyboard?.createCursorKeys();
     this.continueKey = this.input.keyboard?.addKey(
@@ -194,18 +193,6 @@ export class MazeScene extends Phaser.Scene {
     }
   }
 
-  private createTextures(): void {
-    if (!this.textures.exists(HEART_TEXTURE_KEY)) {
-      const graphics = this.make.graphics({ x: 0, y: 0 }, false);
-      graphics.fillStyle(0xff5d8f, 1);
-      graphics.fillCircle(10, 10, 6);
-      graphics.fillCircle(22, 10, 6);
-      graphics.fillTriangle(4, 14, 28, 14, 16, 28);
-      graphics.generateTexture(HEART_TEXTURE_KEY, 32, 32);
-      graphics.destroy();
-    }
-  }
-
   private createWalls(): void {
     if (!this.walls) return;
 
@@ -245,9 +232,9 @@ export class MazeScene extends Phaser.Scene {
         HEART_TEXTURE_KEY,
       ) as Phaser.Physics.Arcade.Image;
 
-      collectible.setScale(0.9);
+      collectible.setDisplaySize(CELL - 8, CELL - 8);
       const body = collectible.body as Phaser.Physics.Arcade.Body | null;
-      body?.setCircle(12, 4, 4);
+      body?.setSize(CELL - 4, CELL - 4, true);
     }
   }
 

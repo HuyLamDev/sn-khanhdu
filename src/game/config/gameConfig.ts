@@ -4,6 +4,7 @@ import { IntroScene } from '../scenes/IntroScene';
 import { LoseScene } from '../scenes/LoseScene';
 import { MazeScene } from '../scenes/MazeScene';
 import { QuizScene } from '../scenes/QuizScene';
+import { EndingScene } from '../scenes/EndingScene';
 import { RunnerScene } from '../scenes/RunnerScene';
 import { StageIntroScene } from '../scenes/StageIntroScene';
 import { WinScene } from '../scenes/WinScene';
@@ -32,6 +33,7 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
     QuizScene,
     MazeScene,
     RunnerScene,
+    EndingScene,
     WinScene,
     LoseScene,
   ],

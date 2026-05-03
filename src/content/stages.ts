@@ -1,8 +1,8 @@
 import {
   MAZE_TARGET_COLLECTIBLES,
-  RUNNER_GOAL_DISTANCE,
+  RUNNER_GOAL_OBSTACLES,
   STAGE_TIMERS,
-} from '../game/config/stageConfig';
+} from "../game/config/stageConfig";
 
 export type StageContent = {
   timerSeconds: number;
@@ -14,8 +14,8 @@ export type MazeStageContent = StageContent & {
   playerSpeed: number;
 };
 
-export type RunnerStageContent = StageContent & {
-  goalDistance: number;
+export type RunnerStageContent = {
+  goalObstacles: number;
   jumpVelocity: number;
   scrollSpeed: number;
   scrollAcceleration: number;
@@ -28,12 +28,11 @@ export const stageContent = {
   maze: {
     timerSeconds: STAGE_TIMERS.maze,
     targetCollectibles: MAZE_TARGET_COLLECTIBLES,
-    enemySpeed: 110,
+    enemySpeed: 138,
     playerSpeed: 140,
   } satisfies MazeStageContent,
   runner: {
-    timerSeconds: STAGE_TIMERS.runner,
-    goalDistance: RUNNER_GOAL_DISTANCE,
+    goalObstacles: RUNNER_GOAL_OBSTACLES,
     jumpVelocity: -680,
     scrollSpeed: 220,
     scrollAcceleration: 18,
