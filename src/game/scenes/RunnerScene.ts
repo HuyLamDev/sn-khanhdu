@@ -20,8 +20,8 @@ const PLAYER_HEIGHT = 128;
 const OBSTACLE_WIDTH = 68;
 const OBSTACLE_HEIGHT = 124;
 const WORLD_GRAVITY = 980;
-const DISTANCE_SCALE = 0.34;
-const MIN_SPAWN_DELAY_MS = 1100;
+const DISTANCE_SCALE = 0.44;
+const MIN_SPAWN_DELAY_MS = 1500;
 const MAX_SPAWN_DELAY_MS = 2100;
 
 export class RunnerScene extends Phaser.Scene {
