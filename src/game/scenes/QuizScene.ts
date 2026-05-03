@@ -200,37 +200,55 @@ export class QuizScene extends Phaser.Scene {
       this.score += 1;
       gameSession.setQuizScore(this.score);
       this.feedbackText?.setText('Correct. The gate remembers that answer.');
+
+      this.scoreText?.setText(`Score: ${this.score}`);
+      this.instructionText?.setText('Continue when you are ready.');
+
+      const isLastQuestion = this.questionIndex === questions.length - 1;
+      const label = isLastQuestion ? 'Continue To Maze' : 'Next Question';
+
+      this.continueButton = this.add
+        .text(GAME_WIDTH / 2, L.continueY, label, {
+          backgroundColor: '#f4b6c2',
+          color: '#4b1f31',
+          fontSize: '22px',
+          padding: { x: 18, y: 10 },
+        })
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+
+      this.continueButton.on('pointerup', () => {
+        if (isLastQuestion) {
+          this.showQuizComplete();
+          return;
+        }
+
+        this.questionIndex += 1;
+        this.renderQuestion();
+      });
     } else {
+      this.timer?.stop();
       this.feedbackText?.setText(
         `Not quite. The true answer was "${question.choices[question.correctIndex]}".`,
       );
+
+      this.scoreText?.setText(`Score: ${this.score}`);
+      this.instructionText?.setText('Try again from the beginning.');
+
+      this.continueButton = this.add
+        .text(GAME_WIDTH / 2, L.continueY, 'Try Again', {
+          backgroundColor: '#f4b6c2',
+          color: '#4b1f31',
+          fontSize: '22px',
+          padding: { x: 18, y: 10 },
+        })
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+
+      this.continueButton.on('pointerup', () => {
+        SceneFlow.goToIntro(this, 'quiz');
+      });
     }
-
-    this.scoreText?.setText(`Score: ${this.score}`);
-    this.instructionText?.setText('Continue when you are ready.');
-
-    const isLastQuestion = this.questionIndex === questions.length - 1;
-    const label = isLastQuestion ? 'Continue To Maze' : 'Next Question';
-
-    this.continueButton = this.add
-      .text(GAME_WIDTH / 2, L.continueY, label, {
-        backgroundColor: '#f4b6c2',
-        color: '#4b1f31',
-        fontSize: '22px',
-        padding: { x: 18, y: 10 },
-      })
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true });
-
-    this.continueButton.on('pointerup', () => {
-      if (isLastQuestion) {
-        this.showQuizComplete();
-        return;
-      }
-
-      this.questionIndex += 1;
-      this.renderQuestion();
-    });
   }
 
   private showQuizComplete(): void {
