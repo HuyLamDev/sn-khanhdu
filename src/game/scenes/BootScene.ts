@@ -45,7 +45,24 @@ export class BootScene extends Phaser.Scene {
 
   create(): void {
     AppBGM.init(this.sound.add('app-bg-music', { loop: true, volume: 0.6 }));
-    AppBGM.resume();
-    this.scene.start(SCENES.intro);
+
+    const cx = GAME_WIDTH / 2;
+    const cy = GAME_HEIGHT / 2;
+
+    this.add.rectangle(cx, cy, GAME_WIDTH, GAME_HEIGHT, 0xfff4f6);
+
+    const btn = this.add
+      .text(cx, cy, 'Tap to Start', {
+        backgroundColor: '#f4b6c2',
+        color: '#4b1f31',
+        fontSize: '28px',
+        padding: { x: 20, y: 12 },
+      })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
+
+    btn.on('pointerup', () => {
+      this.scene.start(SCENES.intro);
+    });
   }
 }
