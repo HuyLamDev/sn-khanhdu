@@ -8,7 +8,12 @@ export const AppBGM = {
   },
 
   resume(): void {
-    if (bgm && !bgm.isPlaying) bgm.play();
+    if (!bgm) return;
+    if (bgm.isPaused) {
+      bgm.resume();
+    } else if (!bgm.isPlaying) {
+      bgm.play();
+    }
   },
 
   pause(): void {
