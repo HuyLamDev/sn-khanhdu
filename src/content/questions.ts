@@ -8,29 +8,29 @@ export type QuizQuestion = {
 
 export const questions: QuizQuestion[] = [
   {
-    prompt: 'Which flower should the princess carry to remember the prince?',
-    choices: ['Rose', 'Lily', 'Sunflower', 'Violet'],
-    correctIndex: 0,
-  },
-  {
-    prompt: 'Which time of day best matches their storybook walks together?',
-    choices: ['Dawn', 'Noon', 'Sunset', 'Midnight'],
+    prompt: 'Sinh nhật của Thái Lê Minh Hiếu?',
+    choices: ['28/06/2002', '19/07/2002', '27/06/2002', '28/04/2002'],
     correctIndex: 2,
   },
   {
-    prompt: 'What gift would the princess protect first on the journey?',
-    choices: ['A ribbon', 'A letter', 'A crown', 'A lantern'],
-    correctIndex: 1,
+    prompt: 'Xu hướng tính dục Thái Lê Minh Hiếu?',
+    choices: ['Les', 'Straight', 'Omega', 'Gay'],
+    correctIndex: 3,
   },
   {
-    prompt: 'Which sound helps the princess stay brave in the maze?',
-    choices: ['Birdsong', 'Rainfall', 'Laughter', 'Silence'],
+    prompt: 'Thái Lê Minh Hiếu học trường gì?',
+    choices: ['UEF', 'FPT', 'Hutech', 'UEH'],
     correctIndex: 2,
   },
   {
-    prompt: 'What promise keeps the princess running toward the final gate?',
-    choices: ['To be kind', 'To return home', 'To reunite at last', 'To be free'],
+    prompt: 'Tên ig của Thái Lê Minh Hiếu?',
+    choices: ['hieuthuhai', 'hieu_hihi', '_hieu_hihi', '_hieu.hihi'],
     correctIndex: 2,
+  },
+  {
+    prompt: 'Thái Lê Minh Hiếu hay Hùng Huỳnh?',
+    choices: ['Hùng Huỳnh', 'Gemini Hùng Huỳnh', 'Hùng Huỳnh Gemini', 'Thái Lê Minh Hiếu'],
+    correctIndex: 3,
   },
 ];
 
