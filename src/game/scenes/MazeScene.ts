@@ -55,6 +55,12 @@ export class MazeScene extends Phaser.Scene {
     super(SCENES.maze);
   }
 
+  preload(): void {
+    this.load.image(PLAYER_TEXTURE_KEY, 'assets/maze-player-kdu.png');
+    this.load.image(ENEMY_TEXTURE_KEY, 'assets/maze-enemy-hung-huynh.png');
+    this.load.image(WALL_TEXTURE_KEY, 'assets/maze-wall-tlmh.png');
+  }
+
   create(): void {
     gameSession.setStage('maze');
     gameSession.setMazeCollected(0);
@@ -125,8 +131,7 @@ export class MazeScene extends Phaser.Scene {
       this.cursors ?? this.input.keyboard!.createCursorKeys(),
       stageContent.maze.playerSpeed,
     );
-    this.player.setCircle(14);
-    this.player.setOffset(3, 3);
+    this.player.setDisplaySize(CELL - 6, CELL - 6);
 
     const enemyPos = cellToWorld(9, 4);
     this.enemy = new MazeEnemy(
@@ -136,8 +141,7 @@ export class MazeScene extends Phaser.Scene {
       ENEMY_TEXTURE_KEY,
       stageContent.maze.enemySpeed,
     );
-    this.enemy.setCircle(14);
-    this.enemy.setOffset(3, 3);
+    this.enemy.setDisplaySize(CELL - 6, CELL - 6);
 
     this.physics.add.collider(this.player, this.walls);
     this.physics.add.collider(this.enemy, this.walls);
@@ -187,9 +191,6 @@ export class MazeScene extends Phaser.Scene {
   }
 
   private createTextures(): void {
-    this.createCircleTexture(PLAYER_TEXTURE_KEY, 17, 0xf26ca7);
-    this.createCircleTexture(ENEMY_TEXTURE_KEY, 17, 0x6f1d42);
-
     if (!this.textures.exists(HEART_TEXTURE_KEY)) {
       const graphics = this.make.graphics({ x: 0, y: 0 }, false);
       graphics.fillStyle(0xff5d8f, 1);
@@ -199,28 +200,6 @@ export class MazeScene extends Phaser.Scene {
       graphics.generateTexture(HEART_TEXTURE_KEY, 32, 32);
       graphics.destroy();
     }
-
-    if (!this.textures.exists(WALL_TEXTURE_KEY)) {
-      const graphics = this.make.graphics({ x: 0, y: 0 }, false);
-      graphics.fillStyle(0xf4b6c2, 1);
-      graphics.fillRect(0, 0, 24, 24);
-      graphics.lineStyle(2, 0xe28aa5, 1);
-      graphics.strokeRect(1, 1, 22, 22);
-      graphics.generateTexture(WALL_TEXTURE_KEY, 24, 24);
-      graphics.destroy();
-    }
-  }
-
-  private createCircleTexture(key: string, radius: number, color: number): void {
-    if (this.textures.exists(key)) {
-      return;
-    }
-
-    const graphics = this.make.graphics({ x: 0, y: 0 }, false);
-    graphics.fillStyle(color, 1);
-    graphics.fillCircle(radius, radius, radius);
-    graphics.generateTexture(key, radius * 2, radius * 2);
-    graphics.destroy();
   }
 
   private createWalls(): void {
@@ -230,10 +209,10 @@ export class MazeScene extends Phaser.Scene {
       rowData.forEach((cell, col) => {
         if (cell !== 1) return;
         const pos = cellToWorld(col, row);
-        this.walls!
-          .create(pos.x, pos.y, WALL_TEXTURE_KEY)
-          .setDisplaySize(CELL, CELL)
-          .refreshBody();
+        const wall = this.walls!.create(pos.x, pos.y, WALL_TEXTURE_KEY) as Phaser.Physics.Arcade.Image;
+        wall.setDisplaySize(CELL, CELL);
+        (wall.body as Phaser.Physics.Arcade.StaticBody).setSize(CELL, CELL);
+        wall.refreshBody();
       });
     });
   }

@@ -1,27 +1,28 @@
-import Phaser from 'phaser';
-import { stageContent } from '../../content/stages';
-import { RunnerObstacle } from '../objects/RunnerObstacle';
-import { GAME_HEIGHT, GAME_WIDTH } from '../config/stageConfig';
-import { gameSession } from '../systems/GameSession';
-import { SceneFlow, SCENES } from '../systems/SceneFlow';
-import { TimerSystem } from '../systems/TimerSystem';
+import Phaser from "phaser";
+import { stageContent } from "../../content/stages";
+import { RunnerObstacle } from "../objects/RunnerObstacle";
+import { GAME_HEIGHT, GAME_WIDTH } from "../config/stageConfig";
+import { gameSession } from "../systems/GameSession";
+import { SceneFlow, SCENES } from "../systems/SceneFlow";
+import { TimerSystem } from "../systems/TimerSystem";
+import { registerRunnerObstacleCollision } from "./registerRunnerObstacleCollision";
 
-const PLAYER_TEXTURE_KEY = 'runner-player';
-const OBSTACLE_TEXTURE_KEY = 'runner-obstacle';
-const GROUND_TEXTURE_KEY = 'runner-ground';
-const BACKDROP_TEXTURE_KEY = 'runner-backdrop';
+const PLAYER_TEXTURE_KEY = "runner-player";
+const OBSTACLE_TEXTURE_KEY = "runner-obstacle";
+const GROUND_TEXTURE_KEY = "runner-ground";
+const BACKDROP_TEXTURE_KEY = "runner-backdrop";
 
 const PLAYER_X = 180;
 const GROUND_HEIGHT = 90;
 const GROUND_TOP = GAME_HEIGHT - GROUND_HEIGHT;
-const PLAYER_WIDTH = 48;
-const PLAYER_HEIGHT = 68;
-const OBSTACLE_WIDTH = 34;
-const OBSTACLE_HEIGHT = 62;
-const WORLD_GRAVITY = 1100;
-const DISTANCE_SCALE = 0.24;
+const PLAYER_WIDTH = 56;
+const PLAYER_HEIGHT = 128;
+const OBSTACLE_WIDTH = 68;
+const OBSTACLE_HEIGHT = 124;
+const WORLD_GRAVITY = 980;
+const DISTANCE_SCALE = 0.34;
 const MIN_SPAWN_DELAY_MS = 1100;
-const MAX_SPAWN_DELAY_MS = 1950;
+const MAX_SPAWN_DELAY_MS = 2100;
 
 export class RunnerScene extends Phaser.Scene {
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -44,8 +45,13 @@ export class RunnerScene extends Phaser.Scene {
     super(SCENES.runner);
   }
 
+  preload(): void {
+    this.load.image(PLAYER_TEXTURE_KEY, "assets/obstacle-player-kdu.png");
+    this.load.image(OBSTACLE_TEXTURE_KEY, "assets/obstacle-hung-huynh.png");
+  }
+
   create(): void {
-    gameSession.setStage('runner');
+    gameSession.setStage("runner");
     gameSession.setRunnerDistance(0);
     this.runnerDistance = 0;
     this.currentSpeed = stageContent.runner.scrollSpeed;
@@ -80,7 +86,8 @@ export class RunnerScene extends Phaser.Scene {
       return;
     }
 
-    this.currentSpeed += stageContent.runner.scrollAcceleration * (delta / 1000);
+    this.currentSpeed +=
+      stageContent.runner.scrollAcceleration * (delta / 1000);
     this.player.setMaxVelocity(this.currentSpeed, 900);
     this.updateDistance(delta);
     this.recycleObstacles();
@@ -114,46 +121,22 @@ export class RunnerScene extends Phaser.Scene {
       ground.generateTexture(GROUND_TEXTURE_KEY, GAME_WIDTH, GROUND_HEIGHT);
       ground.destroy();
     }
-
-    if (!this.textures.exists(PLAYER_TEXTURE_KEY)) {
-      const player = this.add.graphics();
-      player.fillStyle(0x7a284b, 1);
-      player.fillRoundedRect(0, 0, PLAYER_WIDTH, PLAYER_HEIGHT, 12);
-      player.fillStyle(0xffe1ea, 1);
-      player.fillCircle(14, 16, 5);
-      player.fillCircle(34, 16, 5);
-      player.fillStyle(0xf8bfd1, 1);
-      player.fillRect(10, 42, 28, 12);
-      player.generateTexture(PLAYER_TEXTURE_KEY, PLAYER_WIDTH, PLAYER_HEIGHT);
-      player.destroy();
-    }
-
-    if (!this.textures.exists(OBSTACLE_TEXTURE_KEY)) {
-      const obstacle = this.add.graphics();
-      obstacle.fillStyle(0x5b4150, 1);
-      obstacle.fillRoundedRect(0, 0, OBSTACLE_WIDTH, OBSTACLE_HEIGHT, 8);
-      obstacle.fillStyle(0xe58da6, 1);
-      obstacle.fillRect(6, 10, OBSTACLE_WIDTH - 12, 10);
-      obstacle.fillRect(10, 30, OBSTACLE_WIDTH - 20, 8);
-      obstacle.generateTexture(OBSTACLE_TEXTURE_KEY, OBSTACLE_WIDTH, OBSTACLE_HEIGHT);
-      obstacle.destroy();
-    }
   }
 
   private createBackdrop(): void {
     this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, BACKDROP_TEXTURE_KEY);
 
-    this.add.text(48, 34, 'Final Trial', {
-      color: '#7a284b',
-      fontSize: '32px',
-      fontStyle: 'bold',
+    this.add.text(48, 34, "Final Trial", {
+      color: "#7a284b",
+      fontSize: "32px",
+      fontStyle: "bold",
     });
 
     this.add
       .text(GAME_WIDTH - 48, 42, `Goal: ${stageContent.runner.goalDistance}m`, {
-        color: '#7a284b',
-        fontSize: '24px',
-        fontStyle: 'bold',
+        color: "#7a284b",
+        fontSize: "24px",
+        fontStyle: "bold",
       })
       .setOrigin(1, 0);
   }
@@ -167,7 +150,9 @@ export class RunnerScene extends Phaser.Scene {
     this.ground.refreshBody();
 
     for (let x = 0; x < GAME_WIDTH; x += 120) {
-      this.add.rectangle(x + 40, GROUND_TOP + 18, 70, 6, 0xffedf3).setOrigin(0, 0.5);
+      this.add
+        .rectangle(x + 40, GROUND_TOP + 18, 70, 6, 0xffedf3)
+        .setOrigin(0, 0.5);
     }
   }
 
@@ -177,11 +162,10 @@ export class RunnerScene extends Phaser.Scene {
       GROUND_TOP - PLAYER_HEIGHT / 2,
       PLAYER_TEXTURE_KEY,
     );
+    this.player.setDisplaySize(PLAYER_WIDTH, PLAYER_HEIGHT);
     this.player.setCollideWorldBounds(true);
     this.player.setBounce(0);
     this.player.setMaxVelocity(stageContent.runner.scrollSpeed, 900);
-    this.player.setSize(PLAYER_WIDTH - 12, PLAYER_HEIGHT - 6);
-    this.player.setOffset(6, 4);
 
     if (this.ground) {
       this.physics.add.collider(this.player, this.ground);
@@ -195,30 +179,39 @@ export class RunnerScene extends Phaser.Scene {
       runChildUpdate: false,
     });
 
-    this.physics.add.overlap(this.player!, this.obstacles, () => {
-      this.failRun();
-    });
+    registerRunnerObstacleCollision(
+      this.physics,
+      this.player!,
+      this.obstacles,
+      () => {
+        this.failRun();
+      },
+    );
   }
 
   private createHud(): void {
     this.distanceText = this.add.text(48, 148, this.formatDistance(), {
-      color: '#7a284b',
-      fontSize: '24px',
-      fontStyle: 'bold',
+      color: "#7a284b",
+      fontSize: "24px",
+      fontStyle: "bold",
     });
 
     this.statusText = this.add
-      .text(GAME_WIDTH / 2, 160, 'Jump with Up or Space', {
-        color: '#6b5460',
-        fontSize: '20px',
+      .text(GAME_WIDTH / 2, 160, "Jump with Up or Space", {
+        color: "#6b5460",
+        fontSize: "20px",
       })
       .setOrigin(0.5);
   }
 
   private bindInput(): void {
     this.cursors = this.input.keyboard?.createCursorKeys();
-    this.jumpKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-    this.continueKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+    this.jumpKey = this.input.keyboard?.addKey(
+      Phaser.Input.Keyboard.KeyCodes.SPACE,
+    );
+    this.continueKey = this.input.keyboard?.addKey(
+      Phaser.Input.Keyboard.KeyCodes.ENTER,
+    );
   }
 
   private startTimer(): void {
@@ -259,8 +252,7 @@ export class RunnerScene extends Phaser.Scene {
     }
 
     obstacle.setTexture(OBSTACLE_TEXTURE_KEY);
-    obstacle.setSize(OBSTACLE_WIDTH - 6, OBSTACLE_HEIGHT - 4);
-    obstacle.setOffset(3, 2);
+    obstacle.setDisplaySize(OBSTACLE_WIDTH, OBSTACLE_HEIGHT);
     obstacle.launch(
       GAME_WIDTH + Phaser.Math.Between(20, 120),
       GROUND_TOP - OBSTACLE_HEIGHT / 2,
@@ -282,7 +274,10 @@ export class RunnerScene extends Phaser.Scene {
     const upPressed = this.wasJustPressed(this.cursors?.up);
     const spacePressed = this.wasJustPressed(this.jumpKey);
 
-    return Boolean((body?.blocked.down || body?.touching.down) && (upPressed || spacePressed));
+    return Boolean(
+      (body?.blocked.down || body?.touching.down) &&
+      (upPressed || spacePressed),
+    );
   }
 
   private handleContinueInput(): void {
@@ -325,19 +320,21 @@ export class RunnerScene extends Phaser.Scene {
       return true;
     });
 
-    this.statusText?.setText('The tower gate opens. Press Space, Up, or Enter to continue.');
+    this.statusText?.setText(
+      "The tower gate opens. Press Space, Up, or Enter to continue.",
+    );
 
     this.continueButton = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'Continue To The Prince', {
-        backgroundColor: '#f4b6c2',
-        color: '#4b1f31',
-        fontSize: '28px',
+      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2, "Continue To The Prince", {
+        backgroundColor: "#f4b6c2",
+        color: "#4b1f31",
+        fontSize: "28px",
         padding: { x: 18, y: 12 },
       })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
 
-    this.continueButton.on('pointerup', () => {
+    this.continueButton.on("pointerup", () => {
       this.continueToWin();
     });
   }
@@ -349,7 +346,7 @@ export class RunnerScene extends Phaser.Scene {
 
     this.ended = true;
     this.cleanup();
-    SceneFlow.goTo(this, 'win');
+    SceneFlow.goTo(this, "win");
   }
 
   private failRun(): void {
