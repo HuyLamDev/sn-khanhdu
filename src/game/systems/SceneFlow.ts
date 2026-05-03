@@ -33,7 +33,6 @@ export const SceneFlow = {
   },
 
   loseRun(scene: Phaser.Scene): void {
-    gameSession.setStage('lose');
-    scene.scene.start(SCENES.lose);
+    scene.scene.restart();
   },
 };
