@@ -55,12 +55,6 @@ export class MazeScene extends Phaser.Scene {
     super(SCENES.maze);
   }
 
-  preload(): void {
-    this.load.image(PLAYER_TEXTURE_KEY, 'assets/maze-player-kdu.png');
-    this.load.image(ENEMY_TEXTURE_KEY, 'assets/maze-enemy-hung-huynh.png');
-    this.load.image(WALL_TEXTURE_KEY, 'assets/maze-wall-tlmh.png');
-  }
-
   create(): void {
     gameSession.setStage('maze');
     gameSession.setMazeCollected(0);

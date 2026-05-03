@@ -45,11 +45,6 @@ export class RunnerScene extends Phaser.Scene {
     super(SCENES.runner);
   }
 
-  preload(): void {
-    this.load.image(PLAYER_TEXTURE_KEY, "assets/obstacle-player-kdu.png");
-    this.load.image(OBSTACLE_TEXTURE_KEY, "assets/obstacle-hung-huynh.png");
-  }
-
   create(): void {
     gameSession.setStage("runner");
     gameSession.setRunnerDistance(0);
