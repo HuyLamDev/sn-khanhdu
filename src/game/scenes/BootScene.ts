@@ -13,6 +13,7 @@ export class BootScene extends Phaser.Scene {
 
   preload(): void {
     this.load.audio('app-bg-music', 'app-bg-music.mp3');
+    this.load.audio('intro-sound', 'sound intro game.mp3');
     this.load.audio('round1', 'sound round 1.mp3');
     this.load.audio('round2', 'sound round 2.mp3');
     this.load.audio('round3', 'sound round 3.mp3');

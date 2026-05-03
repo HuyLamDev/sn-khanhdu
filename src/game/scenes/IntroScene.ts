@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import { story } from "../../content/story";
 import { GAME_HEIGHT, GAME_WIDTH } from "../config/stageConfig";
 import { gameSession } from "../systems/GameSession";
+import { AppBGM } from "../systems/AppBGM";
 import { SceneFlow, SCENES } from "../systems/SceneFlow";
 
 const BODY_STYLE: Phaser.Types.GameObjects.Text.TextStyle = {
@@ -12,6 +13,8 @@ const BODY_STYLE: Phaser.Types.GameObjects.Text.TextStyle = {
 };
 
 export class IntroScene extends Phaser.Scene {
+  private introSound?: Phaser.Sound.BaseSound;
+
   constructor() {
     super(SCENES.intro);
   }
@@ -19,6 +22,14 @@ export class IntroScene extends Phaser.Scene {
   create(): void {
     gameSession.reset();
     gameSession.setStage("intro");
+
+    AppBGM.pause();
+    this.introSound = this.sound.add("intro-sound");
+    this.introSound.play();
+
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.introSound?.stop();
+    });
 
     this.add
       .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 760, 380, 0xfff7fa, 0.96)
@@ -47,6 +58,8 @@ export class IntroScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true });
 
     button.on("pointerup", () => {
+      this.introSound?.stop();
+      AppBGM.resume();
       SceneFlow.goTo(this, "quiz");
     });
   }
