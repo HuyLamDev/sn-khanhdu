@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/stageConfig';
+import { AppBGM } from '../systems/AppBGM';
 import { SCENES } from '../systems/SceneFlow';
 
 const BAR_W = 400;
@@ -11,6 +12,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   preload(): void {
+    this.load.audio('app-bg-music', 'app-bg-music.mp3');
     this.load.audio('round1', 'sound round 1.mp3');
     this.load.audio('round2', 'sound round 2.mp3');
     this.load.audio('round3', 'sound round 3.mp3');
@@ -41,6 +43,8 @@ export class BootScene extends Phaser.Scene {
   }
 
   create(): void {
+    AppBGM.init(this.sound.add('app-bg-music', { loop: true, volume: 0.6 }));
+    AppBGM.resume();
     this.scene.start(SCENES.intro);
   }
 }

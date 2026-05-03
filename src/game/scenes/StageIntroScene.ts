@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/stageConfig';
+import { AppBGM } from '../systems/AppBGM';
 import type { StageIntroData } from '../systems/SceneFlow';
 import { SCENES, SceneFlow } from '../systems/SceneFlow';
 
@@ -16,6 +17,8 @@ export class StageIntroScene extends Phaser.Scene {
   }
 
   create(): void {
+    AppBGM.pause();
+
     this.add
       .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 760, 380, 0xfff7fa, 0.96)
       .setStrokeStyle(3, 0xe7b5c7);
@@ -52,6 +55,7 @@ export class StageIntroScene extends Phaser.Scene {
 
     button.on('pointerup', () => {
       this.bgm?.stop();
+      AppBGM.resume();
       SceneFlow.launchGameplay(this, this.introData.stage);
     });
 
