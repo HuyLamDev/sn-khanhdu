@@ -5,6 +5,7 @@ import { LoseScene } from '../scenes/LoseScene';
 import { MazeScene } from '../scenes/MazeScene';
 import { QuizScene } from '../scenes/QuizScene';
 import { RunnerScene } from '../scenes/RunnerScene';
+import { StageIntroScene } from '../scenes/StageIntroScene';
 import { WinScene } from '../scenes/WinScene';
 import { GAME_HEIGHT, GAME_WIDTH } from './stageConfig';
 
@@ -27,6 +28,7 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
   scene: [
     BootScene,
     IntroScene,
+    StageIntroScene,
     QuizScene,
     MazeScene,
     RunnerScene,
