@@ -1,4 +1,4 @@
-export type StageKey = 'intro' | 'quiz' | 'maze' | 'runner' | 'ending' | 'win' | 'lose';
+export type StageKey = 'intro' | 'quiz' | 'maze' | 'runner' | 'ending' | 'win' | 'lose' | 'secret';
 
 export type GameSessionState = {
   currentStage: StageKey;

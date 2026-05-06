@@ -25,6 +25,7 @@ export class BootScene extends Phaser.Scene {
     this.load.image('runner-obstacle', 'assets/obstacle-hung-huynh.png');
     this.load.image('ending-castle', 'assets/ending-castle.png');
     this.load.image('win-bg', 'assets/win-scene-background.png');
+    this.load.image('secret-ending', 'assets/secret-ending.jpg');
 
     const cx = GAME_WIDTH / 2;
     const cy = GAME_HEIGHT / 2;

@@ -13,6 +13,7 @@ export const SCENES = {
   ending: "EndingScene",
   win: "WinScene",
   lose: "LoseScene",
+  secret: "SecretScene",
 } as const;
 
 export type GameplayStage = "quiz" | "maze" | "runner";
@@ -55,6 +56,7 @@ const STAGE_TO_SCENE: Record<StageKey, string> = {
   ending: SCENES.ending,
   win: SCENES.win,
   lose: SCENES.lose,
+  secret: SCENES.secret,
 };
 
 function isGameplayStage(stage: StageKey): stage is GameplayStage {

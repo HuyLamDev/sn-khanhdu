@@ -8,6 +8,7 @@ import { EndingScene } from '../scenes/EndingScene';
 import { RunnerScene } from '../scenes/RunnerScene';
 import { StageIntroScene } from '../scenes/StageIntroScene';
 import { WinScene } from '../scenes/WinScene';
+import { SecretScene } from '../scenes/SecretScene';
 import { GAME_HEIGHT, GAME_WIDTH } from './stageConfig';
 
 export const gameConfig: Phaser.Types.Core.GameConfig = {
@@ -36,5 +37,6 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
     EndingScene,
     WinScene,
     LoseScene,
+    SecretScene,
   ],
 };

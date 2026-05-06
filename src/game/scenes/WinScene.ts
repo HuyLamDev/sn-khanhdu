@@ -13,8 +13,8 @@ export class WinScene extends Phaser.Scene {
 
     this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'win-bg').setDisplaySize(GAME_WIDTH, GAME_HEIGHT);
 
-    const replay = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT - 80, 'Play Again', {
+    const secretBtn = this.add
+      .text(GAME_WIDTH / 2, GAME_HEIGHT - 80, 'Secret Ending', {
         backgroundColor: '#f4b6c2',
         color: '#4b1f31',
         fontSize: '26px',
@@ -23,12 +23,8 @@ export class WinScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
 
-    replay.on('pointerup', () => {
-      SceneFlow.restartJourney(this);
-    });
-
-    this.input.keyboard?.once('keydown-SPACE', () => {
-      SceneFlow.restartJourney(this);
+    secretBtn.on('pointerup', () => {
+      SceneFlow.goTo(this, 'secret');
     });
   }
 }
